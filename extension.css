@@ -1,0 +1,27 @@
+/* adapted from https://github.com/ciceronianus/roam-customization/blob/main/CSS/Roam-colored_fonts_alternative.css */
+
+[data-tag^="c_"] {
+    	display:none !important;  
+}
+
+[data-tag^="c_"] + .rm-highlight {
+    color: black !important;
+	border-radius: 1px;
+	padding-left: 5px;
+	padding-right: 5px;
+	margin-left: 3px;
+	margin-right: 3px;
+	font-weight: bold;
+}
+
+[data-tag^="c_green"] + .rm-highlight {
+	background-color: #538d4e !important;
+}
+
+[data-tag^="c_yellow"] + .rm-highlight {
+	background-color: #b59f3b !important;
+}
+
+[data-tag^="c_none"] + .rm-highlight {
+	background-color: white !important;
+}
