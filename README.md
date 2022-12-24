@@ -4,8 +4,8 @@ Yes, that's right. Wordle in your Roam Research graph.
 
 You can trigger this extension from the Command Palette using 'Play Wordle'.
 
-This extension pulls the NYT word of the day and you can play Wordle right in your graph. 
+The extension pulls the NYT Wordle word of the day and you can play right in your graph. 
 
-Just like the official website, you will be warned if you enter two few letters or a word that doesn't exist. Correct letters will be coloured green and misplaced letters yellow.
+Just like the official website, you will be warned if you enter too few letters or a word that doesn't exist. Correctly placed letters will be coloured green and correct but misplaced letters are yellow.
 
 You get six tries or you fail. Good luck!
