@@ -54,7 +54,6 @@ export default {
             },
         });
 
-        /*
         const args = {
             text: "WORDLE",
             help: "Play Wordle",
@@ -73,11 +72,9 @@ export default {
         }
 
         async function fetchWordleSB(context) {
-            console.info(context);
             let uid = context.triggerUid;
             return fetchWordle(uid);
         }
-        */
 
         async function fetchWordle(uid) {
             let response = await fetch("https://wordfinder.yourdictionary.com/wordle/answers/");
@@ -101,7 +98,9 @@ export default {
         window.roamAlphaAPI.ui.commandPalette.removeCommand({
             label: 'Play Wordle'
         });
-
+        if (window.roamjs?.extension?.smartblocks) {
+            window.roamjs.extension.smartblocks.unregisterCommand("WORDLE");
+        };
         if (observer != undefined) {
             observer.disconnect();
         }
@@ -144,6 +143,14 @@ async function wordle(parentBlock, word, wordleNumber) {
             block: { string: string1, uid: line }
         });
         lines.push({ "uid": line });
+        return [
+            {
+                text: "**Wordle " + wordleNumber + ":**",
+                children: [
+                    { text: "" },
+                ]
+            }
+        ];
     } else { // counting tries
         if (existingItems != null && existingItems[0][0].hasOwnProperty("children")) {
             line = existingItems[0][0].children[lines.length].uid.toString();
@@ -151,7 +158,7 @@ async function wordle(parentBlock, word, wordleNumber) {
         }
     }
     await sleep(500);
-    initiateObserver(parentBlock, lines, word);
+    return initiateObserver(parentBlock, lines, word);
 }
 
 async function initiateObserver(parentBlock, lines, word) {
