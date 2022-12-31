@@ -57,7 +57,7 @@ export default {
         const args = {
             text: "WORDLE",
             help: "Play Wordle",
-            handler: (context) => fetchWordleSB(context),
+            handler: (context) => (...args) => fetchWordleSB(context),
         };
 
         if (window.roamjs?.extension?.smartblocks) {
@@ -73,6 +73,10 @@ export default {
 
         async function fetchWordleSB(context) {
             let uid = context.triggerUid;
+            n = 0;
+            while (lines.length) {
+                lines.pop();
+            }
             return fetchWordle(uid);
         }
 
@@ -143,14 +147,6 @@ async function wordle(parentBlock, word, wordleNumber) {
             block: { string: string1, uid: line }
         });
         lines.push({ "uid": line });
-        return [
-            {
-                text: "**Wordle " + wordleNumber + ":**",
-                children: [
-                    { text: "" },
-                ]
-            }
-        ];
     } else { // counting tries
         if (existingItems != null && existingItems[0][0].hasOwnProperty("children")) {
             line = existingItems[0][0].children[lines.length].uid.toString();
@@ -158,7 +154,8 @@ async function wordle(parentBlock, word, wordleNumber) {
         }
     }
     await sleep(500);
-    return initiateObserver(parentBlock, lines, word);
+    initiateObserver(parentBlock, lines, word);
+    return ("");
 }
 
 async function initiateObserver(parentBlock, lines, word) {
@@ -179,79 +176,99 @@ async function initiateObserver(parentBlock, lines, word) {
     const callback = async function (mutationsList, observer) {
         for (const mutation of mutationsList) {
             if (mutation.target == targetNode) {
-                let attempt = mutation.addedNodes[0].previousSibling.innerText;
-                attempt = attempt.trim();
-                // adapted logic from https://github.com/robvanbakel/wordle-cli/blob/main/bin/index.js
-                if (guessRegex.test(attempt)) { // a 5-letter word
-                    if (wordList.indexOf(attempt.toLowerCase()) > -1) { // valid word entered
-                        // find correctly placed letters and set green
-                        let attempt1 = attempt.toUpperCase().split('');
-                        attempt1.forEach((letter, index) => {
-                            if (letter === word[index]) {
-                                result[index] = {
-                                    ...result[index],
-                                    letter,
-                                    color: 'green',
-                                };
-                            }
-                        });
-                        // set wrongly placed letters to yellow
-                        attempt1.forEach((letter, index) => {
-                            if (!result[index].color && word.includes(letter)) {
-                                const matchingResultLetters = result.filter((item) => item.letter === letter);
-                                const matchingWordOfTheDayLetters = word.toUpperCase().split('').filter((item) => item === letter);
-
-                                if (matchingResultLetters.length < matchingWordOfTheDayLetters.length) {
+                if (mutation.addedNodes.length > 0) {
+                    let attempt = mutation.addedNodes[0].previousSibling.innerText;
+                    attempt = attempt.trim();
+                    // adapted logic from https://github.com/robvanbakel/wordle-cli/blob/main/bin/index.js
+                    if (guessRegex.test(attempt)) { // a 5-letter word
+                        if (wordList.indexOf(attempt.toLowerCase()) > -1) { // valid word entered
+                            // find correctly placed letters and set green
+                            let attempt1 = attempt.toUpperCase().split('');
+                            attempt1.forEach((letter, index) => {
+                                if (letter === word[index]) {
                                     result[index] = {
                                         ...result[index],
                                         letter,
-                                        color: 'yellow',
+                                        color: 'green',
                                     };
                                 }
-                            }
-                        });
-                        // set all other letters to none
-                        attempt1.forEach((letter, index) => {
-                            if (!result[index].color) {
-                                result[index] = {
-                                    ...result[index],
-                                    letter,
-                                    color: 'none',
-                                };
-                            }
-                        });
-                        let n = lines.length - 1;
-                        let thisUid = lines[n].uid;
+                            });
+                            // set wrongly placed letters to yellow
+                            attempt1.forEach((letter, index) => {
+                                if (!result[index].color && word.includes(letter)) {
+                                    const matchingResultLetters = result.filter((item) => item.letter === letter);
+                                    const matchingWordOfTheDayLetters = word.toUpperCase().split('').filter((item) => item === letter);
 
-                        let newString = "";
-                        for (var i = 0; i < result.length; i++) {
-                            if (result[i].color == "green") {
-                                newString += "#c_green^^" + result[i].letter + "^^";
-                            } else if (result[i].color == "yellow") {
-                                newString += "#c_yellow^^" + result[i].letter + "^^";
-                            } else {
-                                newString += "#c_none^^" + result[i].letter + "^^";
+                                    if (matchingResultLetters.length < matchingWordOfTheDayLetters.length) {
+                                        result[index] = {
+                                            ...result[index],
+                                            letter,
+                                            color: 'yellow',
+                                        };
+                                    }
+                                }
+                            });
+                            // set all other letters to none
+                            attempt1.forEach((letter, index) => {
+                                if (!result[index].color) {
+                                    result[index] = {
+                                        ...result[index],
+                                        letter,
+                                        color: 'none',
+                                    };
+                                }
+                            });
+                            let n = lines.length - 1;
+                            let thisUid = lines[n].uid;
+
+                            let newString = "";
+                            for (var i = 0; i < result.length; i++) {
+                                if (result[i].color == "green") {
+                                    newString += "#c_green^^" + result[i].letter + "^^";
+                                } else if (result[i].color == "yellow") {
+                                    newString += "#c_yellow^^" + result[i].letter + "^^";
+                                } else {
+                                    newString += "#c_none^^" + result[i].letter + "^^";
+                                }
                             }
-                        }
-                        window.roamAlphaAPI.updateBlock(
-                            { block: { uid: thisUid, string: newString.toString(), open: true } });
-                        if (attempt.toUpperCase() === word) { // solved!
+                            window.roamAlphaAPI.updateBlock(
+                                { block: { uid: thisUid, string: newString.toString(), open: true } });
+                            if (attempt.toUpperCase() === word) { // solved!
+                                var existingItems = window.roamAlphaAPI.q(`[:find (pull ?page [:node/title :block/string :block/uid {:block/children ...} ]) :where [?page :block/uid "${parentBlock}"] ]`);
+                                if (existingItems != null && existingItems[0][0].hasOwnProperty("children")) {
+                                    let n = existingItems[0][0].children.length - 1;
+                                    let winString = "Congratulations! Wordle (" + wordleNumber + ") " + n + "/6";
+                                    window.roamAlphaAPI.updateBlock(
+                                        { block: { uid: existingItems[0][0].children[n].uid, string: winString, open: true } });
+                                }
+                                observer.disconnect();
+                                return;
+                            } else {
+                                wordle(parentBlock, word, null);
+                            }
+                        } else {
+                            observer.disconnect();
+                            let blockInfo = window.roamAlphaAPI.ui.getFocusedBlock();
+                            alert("That isn't one of the allowed words!");
                             var existingItems = window.roamAlphaAPI.q(`[:find (pull ?page [:node/title :block/string :block/uid {:block/children ...} ]) :where [?page :block/uid "${parentBlock}"] ]`);
                             if (existingItems != null && existingItems[0][0].hasOwnProperty("children")) {
-                                let n = existingItems[0][0].children.length - 1;
-                                let winString = "Congratulations! Wordle (" + wordleNumber + ") " + n + "/6";
+                                let n1 = existingItems[0][0].children.length - 2;
                                 window.roamAlphaAPI.updateBlock(
-                                    { block: { uid: existingItems[0][0].children[n].uid, string: winString, open: true } });
+                                    { block: { uid: existingItems[0][0].children[n1].uid, string: "", open: true } });
+                                let n = existingItems[0][0].children.length - 1;
+                                window.roamAlphaAPI.deleteBlock({
+                                    "block":
+                                        { "uid": existingItems[0][0].children[n].uid }
+                                });
+                                window.roamAlphaAPI.ui.setBlockFocusAndSelection({ "location": blockInfo });
                             }
-                            observer.disconnect();
-                            return;
-                        } else {
-                            wordle(parentBlock, word, null);
+                            await sleep(100); //stop throwing mutation errors
+                            observer.observe(targetNode, config);
                         }
                     } else {
                         observer.disconnect();
                         let blockInfo = window.roamAlphaAPI.ui.getFocusedBlock();
-                        alert("That isn't one of the allowed words!");
+                        alert("Please enter a five-letter word!");
                         var existingItems = window.roamAlphaAPI.q(`[:find (pull ?page [:node/title :block/string :block/uid {:block/children ...} ]) :where [?page :block/uid "${parentBlock}"] ]`);
                         if (existingItems != null && existingItems[0][0].hasOwnProperty("children")) {
                             let n1 = existingItems[0][0].children.length - 2;
@@ -267,24 +284,6 @@ async function initiateObserver(parentBlock, lines, word) {
                         await sleep(100); //stop throwing mutation errors
                         observer.observe(targetNode, config);
                     }
-                } else {
-                    observer.disconnect();
-                    let blockInfo = window.roamAlphaAPI.ui.getFocusedBlock();
-                    alert("Please enter a five-letter word!");
-                    var existingItems = window.roamAlphaAPI.q(`[:find (pull ?page [:node/title :block/string :block/uid {:block/children ...} ]) :where [?page :block/uid "${parentBlock}"] ]`);
-                    if (existingItems != null && existingItems[0][0].hasOwnProperty("children")) {
-                        let n1 = existingItems[0][0].children.length - 2;
-                        window.roamAlphaAPI.updateBlock(
-                            { block: { uid: existingItems[0][0].children[n1].uid, string: "", open: true } });
-                        let n = existingItems[0][0].children.length - 1;
-                        window.roamAlphaAPI.deleteBlock({
-                            "block":
-                                { "uid": existingItems[0][0].children[n].uid }
-                        });
-                        window.roamAlphaAPI.ui.setBlockFocusAndSelection({ "location": blockInfo });
-                    }
-                    await sleep(100); //stop throwing mutation errors
-                    observer.observe(targetNode, config);
                 }
             }
         }
