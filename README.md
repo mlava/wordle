@@ -2,7 +2,7 @@ Yes, that's right. Wordle in your Roam Research graph.
 
 ![image](https://user-images.githubusercontent.com/6857790/209258029-b952c32f-7835-4485-897a-03da32ac17de.png)
 
-You can trigger this extension from the Command Palette using 'Play Wordle'.
+You can trigger this extension from the Command Palette using 'Play Wordle'. Or, use the SmartBlock command <%WORDLE%>.
 
 The extension pulls the NYT Wordle word of the day and you can play right in your graph. 
 
