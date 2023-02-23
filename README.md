@@ -1,5 +1,9 @@
 Yes, that's right. Wordle in your Roam Research graph.
 
+**New:**
+- Now compatible with the new user-defined hotkeys function - see Hotkeys option in Roam Research Settings
+- fixed focus bug after entering a word that isn't in the allowed words
+
 ![image](https://user-images.githubusercontent.com/6857790/209258029-b952c32f-7835-4485-897a-03da32ac17de.png)
 
 You can trigger this extension from the Command Palette using 'Play Wordle'. Or, use the SmartBlock command <%WORDLE%>.
