@@ -4,6 +4,7 @@ var observer = undefined;
 var lines = [];
 var wordleNumber;
 var noWordleInstructions = false;
+var focusedWindow;
 
 export default {
     onload: ({ extensionAPI }) => {
@@ -35,7 +36,7 @@ export default {
             }
         }
 
-        window.roamAlphaAPI.ui.commandPalette.addCommand({
+        extensionAPI.ui.commandPalette.addCommand({
             label: "Play Wordle",
             callback: () => {
                 n = 0;
@@ -81,6 +82,7 @@ export default {
         }
 
         async function fetchWordle(uid) {
+            focusedWindow = window.roamAlphaAPI.ui.getFocusedBlock()?.["window-id"];
             let response = await fetch("https://wordfinder.yourdictionary.com/wordle/answers/");
             if (response.ok) {
                 let data = await response.text();
@@ -99,9 +101,6 @@ export default {
         }
     },
     onunload: () => {
-        window.roamAlphaAPI.ui.commandPalette.removeCommand({
-            label: 'Play Wordle'
-        });
         if (window.roamjs?.extension?.smartblocks) {
             window.roamjs.extension.smartblocks.unregisterCommand("WORDLE");
         };
@@ -128,6 +127,8 @@ async function wordle(parentBlock, word, wordleNumber) {
         return;
     } else if (lines.length == 0) { // setting up game
         await window.roamAlphaAPI.updateBlock({ block: { uid: parentBlock, string: "**Wordle " + wordleNumber + ":**".toString(), open: true } });
+        let string1 = "";
+        line = await window.roamAlphaAPI.util.generateUID();
         if (noWordleInstructions == false) {
             let string = "Enter a five-letter word in the block below the heading and then hit 'Enter'.<BR><BR>Correct letters in the wrong place will be highlighted in yellow and correctly placed letters in green.<BR><BR>You have six tries. Good luck!<BR><BR>(You can turn off these instruction in Roam Depot settings.)";
             iziToast.show({
@@ -140,12 +141,13 @@ async function wordle(parentBlock, word, wordleNumber) {
                 displayMode: 2
             });
         }
-        let string1 = "";
-        line = await window.roamAlphaAPI.util.generateUID();
         await window.roamAlphaAPI.createBlock({
             location: { "parent-uid": parentBlock, order: n + 1 },
             block: { string: string1, uid: line }
         });
+        await sleep(200);
+        await window.roamAlphaAPI.ui.setBlockFocusAndSelection(
+            { location: { "block-uid": line, "window-id": focusedWindow } });
         lines.push({ "uid": line });
     } else { // counting tries
         if (existingItems != null && existingItems[0][0].hasOwnProperty("children")) {
@@ -260,7 +262,8 @@ async function initiateObserver(parentBlock, lines, word) {
                                     "block":
                                         { "uid": existingItems[0][0].children[n].uid }
                                 });
-                                window.roamAlphaAPI.ui.setBlockFocusAndSelection({ "location": blockInfo });
+                                await window.roamAlphaAPI.ui.setBlockFocusAndSelection(
+                                    { location: { "block-uid": blockInfo, "window-id": focusedWindow } });
                             }
                             await sleep(100); //stop throwing mutation errors
                             observer.observe(targetNode, config);
@@ -279,7 +282,8 @@ async function initiateObserver(parentBlock, lines, word) {
                                 "block":
                                     { "uid": existingItems[0][0].children[n].uid }
                             });
-                            window.roamAlphaAPI.ui.setBlockFocusAndSelection({ "location": blockInfo });
+                            await window.roamAlphaAPI.ui.setBlockFocusAndSelection(
+                                { location: { "block-uid": blockInfo, "window-id": focusedWindow } });
                         }
                         await sleep(100); //stop throwing mutation errors
                         observer.observe(targetNode, config);
