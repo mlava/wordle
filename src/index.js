@@ -250,7 +250,6 @@ async function initiateObserver(parentBlock, lines, word) {
                             }
                         } else {
                             observer.disconnect();
-                            let blockInfo = window.roamAlphaAPI.ui.getFocusedBlock();
                             alert("That isn't one of the allowed words!");
                             var existingItems = window.roamAlphaAPI.q(`[:find (pull ?page [:node/title :block/string :block/uid {:block/children ...} ]) :where [?page :block/uid "${parentBlock}"] ]`);
                             if (existingItems != null && existingItems[0][0].hasOwnProperty("children")) {
@@ -262,15 +261,15 @@ async function initiateObserver(parentBlock, lines, word) {
                                     "block":
                                         { "uid": existingItems[0][0].children[n].uid }
                                 });
+                                await sleep(10);
                                 await window.roamAlphaAPI.ui.setBlockFocusAndSelection(
-                                    { location: { "block-uid": blockInfo, "window-id": focusedWindow } });
+                                    { location: { "block-uid": existingItems[0][0].children[n1].uid, "window-id": focusedWindow } });
                             }
                             await sleep(100); //stop throwing mutation errors
                             observer.observe(targetNode, config);
                         }
                     } else {
                         observer.disconnect();
-                        let blockInfo = window.roamAlphaAPI.ui.getFocusedBlock();
                         alert("Please enter a five-letter word!");
                         var existingItems = window.roamAlphaAPI.q(`[:find (pull ?page [:node/title :block/string :block/uid {:block/children ...} ]) :where [?page :block/uid "${parentBlock}"] ]`);
                         if (existingItems != null && existingItems[0][0].hasOwnProperty("children")) {
@@ -282,8 +281,9 @@ async function initiateObserver(parentBlock, lines, word) {
                                 "block":
                                     { "uid": existingItems[0][0].children[n].uid }
                             });
+                            await sleep(10);
                             await window.roamAlphaAPI.ui.setBlockFocusAndSelection(
-                                { location: { "block-uid": blockInfo, "window-id": focusedWindow } });
+                                { location: { "block-uid": existingItems[0][0].children[n1].uid, "window-id": focusedWindow } });
                         }
                         await sleep(100); //stop throwing mutation errors
                         observer.observe(targetNode, config);
