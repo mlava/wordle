@@ -74,6 +74,7 @@ export default {
 
         async function fetchWordleSB(context) {
             let uid = context.triggerUid;
+            //console.info(uid);
             n = 0;
             while (lines.length) {
                 lines.pop();
