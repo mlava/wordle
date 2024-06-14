@@ -84,14 +84,10 @@ export default {
 
         async function fetchWordle(uid) {
             focusedWindow = window.roamAlphaAPI.ui.getFocusedBlock()?.["window-id"];
-            let response = await fetch("https://wordfinder.yourdictionary.com/wordle/answers/");
+            let response = await fetch("https://aqueous-fjord-60821-e79310350281.herokuapp.com/");
             if (response.ok) {
-                let data = await response.text();
-                var doc = new DOMParser().parseFromString(data, "text/html");
-                let word = doc.querySelector(".answer").innerText.trim();
-                let wn = doc.querySelector("div.wordle-answer-section > h2").innerText.split("#");
-                wordleNumber = wn[1].split(")")[0];
-                return wordle(uid, word, wordleNumber);
+                let data = await response.json();
+                return wordle(uid, data.answer, data.number);
             } else {
                 console.error(response);
                 alert("Failed to get today's Wordle");
@@ -157,11 +153,11 @@ async function wordle(parentBlock, word, wordleNumber) {
         }
     }
     await sleep(500);
-    initiateObserver(parentBlock, lines, word);
+    initiateObserver(parentBlock, lines, word, wordleNumber);
     return ("");
 }
 
-async function initiateObserver(parentBlock, lines, word) {
+async function initiateObserver(parentBlock, lines, word, wordleNumber) {
     const targetNodeID = document.querySelector('[id*=\'' + parentBlock + '\']');
     var targetNode;
     if (targetNodeID.nodeName == 'TEXTAREA') {
@@ -240,7 +236,7 @@ async function initiateObserver(parentBlock, lines, word) {
                                 var existingItems = window.roamAlphaAPI.q(`[:find (pull ?page [:node/title :block/string :block/uid {:block/children ...} ]) :where [?page :block/uid "${parentBlock}"] ]`);
                                 if (existingItems != null && existingItems[0][0].hasOwnProperty("children")) {
                                     let n = existingItems[0][0].children.length - 1;
-                                    let winString = "Congratulations! Wordle (" + wordleNumber + ") " + n + "/6";
+                                    let winString = "Congratulations! " + n + "/6";
                                     window.roamAlphaAPI.updateBlock(
                                         { block: { uid: existingItems[0][0].children[n].uid, string: winString, open: true } });
                                 }
