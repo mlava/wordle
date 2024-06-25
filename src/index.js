@@ -84,10 +84,25 @@ export default {
 
         async function fetchWordle(uid) {
             focusedWindow = window.roamAlphaAPI.ui.getFocusedBlock()?.["window-id"];
-            let response = await fetch("https://aqueous-fjord-60821-e79310350281.herokuapp.com/");
+
+            // https://www.nytimes.com/svc/wordle/v2/{YYYY}-{MM}-{DD}.json is blocked by cors
+            // calling heroku server to get this data from NYT json and return
+            const date = new Date();
+            let day = date.getDate();
+            if (day < 10) {
+                day = '0'+day;
+            }
+            let month = date.getMonth() + 1;
+            if (month < 10) {
+                month = '0'+month;
+            }
+            let year = date.getFullYear();
+            var url = `https://aqueous-fjord-60821-e79310350281.herokuapp.com/?date=${year}-${month}-${day}`;
+            let response = await fetch(url);
             if (response.ok) {
                 let data = await response.json();
-                return wordle(uid, data.answer, data.number);
+                data = JSON.parse(data);
+                return wordle(uid, data.solution.toUpperCase(), data.id);
             } else {
                 console.error(response);
                 alert("Failed to get today's Wordle");
