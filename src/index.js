@@ -102,7 +102,7 @@ export default {
             if (response.ok) {
                 let data = await response.json();
                 data = JSON.parse(data);
-                return wordle(uid, data.solution.toUpperCase(), data.id);
+                return wordle(uid, data.solution.toUpperCase(), data.days_since_launch);
             } else {
                 console.error(response);
                 alert("Failed to get today's Wordle");
