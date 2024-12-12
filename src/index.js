@@ -85,8 +85,6 @@ export default {
         async function fetchWordle(uid) {
             focusedWindow = window.roamAlphaAPI.ui.getFocusedBlock()?.["window-id"];
 
-            // https://www.nytimes.com/svc/wordle/v2/{YYYY}-{MM}-{DD}.json is blocked by cors
-            // calling heroku server to get this data from NYT json and return
             const date = new Date();
             let day = date.getDate();
             if (day < 10) {
@@ -97,11 +95,16 @@ export default {
                 month = '0'+month;
             }
             let year = date.getFullYear();
-            var url = `https://aqueous-fjord-60821-e79310350281.herokuapp.com/?date=${year}-${month}-${day}`;
-            let response = await fetch(url);
+            // https://www.nytimes.com/svc/wordle/v2/{YYYY}-{MM}-{DD}.json is blocked by cors
+            // calling heroku server to get this data from NYT json and return
+            // var url = `https://aqueous-fjord-60821-e79310350281.herokuapp.com/?date=${year}-${month}-${day}`;
+            // now using the RR corsAnywhere proxy
+            var url = `https://www.nytimes.com/svc/wordle/v2/${year}-${month}-${day}.json`;
+            let response = await fetch(`${roamAlphaAPI.constants.corsAnywhereProxyUrl}/${url}`);
             if (response.ok) {
                 let data = await response.json();
-                data = JSON.parse(data);
+                console.info(data);
+                //data = JSON.parse(data);
                 return wordle(uid, data.solution.toUpperCase(), data.days_since_launch);
             } else {
                 console.error(response);
@@ -131,7 +134,7 @@ async function wordle(parentBlock, word, wordleNumber) {
     if (lines.length > 5) { // you lose!
         if (existingItems != null && existingItems[0][0].hasOwnProperty("children")) {
             let n = existingItems[0][0].children.length - 1;
-            let loseString = "Sorry, you didn't solve it this time!";
+            let loseString = "Sorry, you didn't solve it this time! The answer was: " + word;
             window.roamAlphaAPI.updateBlock(
                 { block: { uid: existingItems[0][0].children[n].uid, string: loseString, open: true } });
         }
