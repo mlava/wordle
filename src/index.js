@@ -45,7 +45,15 @@ export default {
                 }
                 const uid = window.roamAlphaAPI.ui.getFocusedBlock()?.["block-uid"];
                 if (uid == undefined) {
-                    alert("Please make sure to focus a block before playing Wordle");
+                    iziToast.show({
+                        theme: 'dark',
+                        message: 'Please make sure to focus a block before playing Wordle',
+                        position: 'center',
+                        close: false,
+                        timeout: 3000,
+                        closeOnClick: true,
+                        displayMode: 2
+                    });
                     return;
                 } else {
                     window.roamAlphaAPI.updateBlock(
@@ -74,7 +82,6 @@ export default {
 
         async function fetchWordleSB(context) {
             let uid = context.triggerUid;
-            //console.info(uid);
             n = 0;
             while (lines.length) {
                 lines.pop();
@@ -103,12 +110,19 @@ export default {
             let response = await fetch(`${roamAlphaAPI.constants.corsAnywhereProxyUrl}/${url}`);
             if (response.ok) {
                 let data = await response.json();
-                console.info(data);
                 //data = JSON.parse(data);
                 return wordle(uid, data.solution.toUpperCase(), data.days_since_launch);
             } else {
                 console.error(response);
-                alert("Failed to get today's Wordle");
+                iziToast.show({
+                    theme: 'dark',
+                    message: 'Failed to get today\'s Wordle',
+                    position: 'center',
+                    close: false,
+                    timeout: 3000,
+                    closeOnClick: true,
+                    displayMode: 2
+                });
                 if (uid != undefined) {
                     await window.roamAlphaAPI.deleteBlock({ "block": { "uid": uid } });
                 }
@@ -265,7 +279,15 @@ async function initiateObserver(parentBlock, lines, word, wordleNumber) {
                             }
                         } else {
                             observer.disconnect();
-                            alert("That isn't one of the allowed words!");
+                            iziToast.show({
+                                theme: 'dark',
+                                message: 'That isn\'t one of the allowed words!',
+                                position: 'center',
+                                close: false,
+                                timeout: 3000,
+                                closeOnClick: true,
+                                displayMode: 2
+                            });
                             var existingItems = window.roamAlphaAPI.q(`[:find (pull ?page [:node/title :block/string :block/uid {:block/children ...} ]) :where [?page :block/uid "${parentBlock}"] ]`);
                             if (existingItems != null && existingItems[0][0].hasOwnProperty("children")) {
                                 let n1 = existingItems[0][0].children.length - 2;
@@ -285,7 +307,15 @@ async function initiateObserver(parentBlock, lines, word, wordleNumber) {
                         }
                     } else {
                         observer.disconnect();
-                        alert("Please enter a five-letter word!");
+                        iziToast.show({
+                            theme: 'dark',
+                            message: 'Please enter a five-letter word!',
+                            position: 'center',
+                            close: false,
+                            timeout: 3000,
+                            closeOnClick: true,
+                            displayMode: 2
+                        });
                         var existingItems = window.roamAlphaAPI.q(`[:find (pull ?page [:node/title :block/string :block/uid {:block/children ...} ]) :where [?page :block/uid "${parentBlock}"] ]`);
                         if (existingItems != null && existingItems[0][0].hasOwnProperty("children")) {
                             let n1 = existingItems[0][0].children.length - 2;
