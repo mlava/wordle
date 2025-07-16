@@ -90,7 +90,14 @@ export default {
         }
 
         async function fetchWordle(uid) {
-            focusedWindow = window.roamAlphaAPI.ui.getFocusedBlock()?.["window-id"];
+            if (uid == null) {
+                focusedWindow = window.roamAlphaAPI.ui.getFocusedBlock()?.["window-id"];
+            } else {
+                focusedWindow = await window.roamAlphaAPI.q(
+                    `[:find (pull ?p [:block/uid]) :where [?e :block/uid "${uid}"] [?e :block/page ?p]]`
+                    );
+                focusedWindow = focusedWindow[0][0].uid.toString();
+            }
 
             const date = new Date();
             let day = date.getDate();
